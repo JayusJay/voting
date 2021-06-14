@@ -34,9 +34,10 @@ contract voting{
     the details of the various candidates and whatever position the 
     candidate is vies for*/
 
-    constructor(bytes32[] memory candidateInfo, bytes32[] memory position){
+    function main(bytes32[] memory candidateInfo, bytes32[] memory position) public {
         electionOfficer = msg.sender;
-        for(uint i = 1; i <= candidateInfo.length; i++){
+        
+        for(uint i = 0; i < candidateInfo.length; i++){
             _candidates.push(candidateDetails({
                 name: candidateInfo[i],
                 vyingPosition: position[i],
