@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >= 0.8.0;
+pragma solidity >= 0.8.0 <0.9.0;
 
 contract voting{
 
@@ -26,7 +26,7 @@ contract voting{
     Voter[] public allowedVoters; ///array of voters allowed to vote
 
     mapping(address => Voter) public voters;
-
+    
     address public electionOfficer; ///declaring address of person who calls poll creation contract
 
 
@@ -53,6 +53,7 @@ contract voting{
         "Only election commissioner can give rights to vote");
 
         for(uint j = 0; j < _voter.length; j++){
+            
             allowedVoters.push(Voter({
                 voterAddress: _voter[j],
                 studentId: _studentId[j],
@@ -61,5 +62,28 @@ contract voting{
             }));
         }
     }
+    
+    function castVote(address _address, uint _choice) public {
+      for(uint k = 0; k < allowedVoters.length; k++ ){
+       if (allowedVoters[k].voterAddress == _address){
+           vote(_choice);
+            }
+       
+        }
+    }
+    
+    function vote(uint choice) internal {
+        Voter storage sender = voters[msg.sender];
+        require(!sender.voted, "Already voted.");
+        sender.voted = true;
+        sender.vote = choice;
 
+        // If 'choice' is out of the range of the array,
+        // this will throw automatically and revert all
+        // changes.
+        
+        _candidates[choice].voteCount += 1;
+    }
+    
+    
 }
