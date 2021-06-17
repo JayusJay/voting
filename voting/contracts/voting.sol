@@ -23,9 +23,9 @@ contract voting{
 
     candidateDetails[] public _candidates; 
 
-    Voter[] public allowedVoters; ///array of voters allowed to vote
+    Voter[] internal allowedVoters; ///array of voters allowed to vote
 
-    mapping(address => Voter) public voters;
+    //mapping(address => Voter) public voters;
     
     address public electionOfficer; ///declaring address of person who calls poll creation contract
 
@@ -47,8 +47,11 @@ contract voting{
         }
 
     }
-
-    function approvedVoters(address[] memory _voter, uint[] memory _studentId) public{
+    /*
+    approvedVoters function takes addresses and student Ids of people(students) who the ballot
+    creator(electionOfficer) wants to participate in the election
+    */
+    function approveVoters(address[] memory _voter, uint[] memory _studentId) public{
         require(msg.sender == electionOfficer, 
         "Only election commissioner can give rights to vote");
 
@@ -62,28 +65,43 @@ contract voting{
             }));
         }
     }
-    
-    function castVote(address _address, uint _choice) public {
-      for(uint k = 0; k < allowedVoters.length; k++ ){
-       if (allowedVoters[k].voterAddress == _address){
-           vote(_choice);
+
+    function castVote(address _address, uint _choice) public{
+        require(msg.sender == _address, "Incorrect transacting address");
+        
+        for(uint k = 0; k < allowedVoters.length; k++){
+            if(allowedVoters[k].voterAddress == _address){
+                require(!allowedVoters[k].voted, "Already voted");
+                require(allowedVoters[k].voterAddress == _address, "You are not approved to vote");
+                allowedVoters[k].voted = true;
+                allowedVoters[k].vote = _choice;
+                _candidates[_choice].voteCount += 1;
             }
-       
         }
     }
     
-    function vote(uint choice) internal {
-        Voter storage sender = voters[msg.sender];
-        require(!sender.voted, "Already voted.");
-        sender.voted = true;
-        sender.vote = choice;
-
-        // If 'choice' is out of the range of the array,
-        // this will throw automatically and revert all
-        // changes.
-        
-        _candidates[choice].voteCount += 1;
+    function winningCandidate() public view
+            returns (uint winningCandidate_){
+                
+            uint winningVoteCount = 0;
+            
+            for (uint p = 0; p < _candidates.length; p++) {
+                if (_candidates[p].voteCount > winningVoteCount) {
+                    winningVoteCount = _candidates[p].voteCount;
+                    winningCandidate_ = p;
+                }
+            }
     }
-    
-    
+
+    /** 
+     * @dev Calls winningProposal() function to get the index of the winner contained in the proposals array and then
+     * @return winnerName_ the name of the winner
+     * @return vyingPosition_ the position of the winner
+     */
+    function winnerName() public view
+            returns (bytes32 winnerName_, bytes32 vyingPosition_){
+        winnerName_ = _candidates[winningCandidate()].name;
+        vyingPosition_ = _candidates[winningCandidate()].vyingPosition;
+    }
+
 }
