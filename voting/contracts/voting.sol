@@ -72,7 +72,6 @@ contract voting{
         for(uint k = 0; k < allowedVoters.length; k++){
             if(allowedVoters[k].voterAddress == _address){
                 require(!allowedVoters[k].voted, "Already voted");
-                require(allowedVoters[k].voterAddress == _address, "You are not approved to vote");
                 allowedVoters[k].voted = true;
                 allowedVoters[k].vote = _choice;
                 _candidates[_choice].voteCount += 1;
