@@ -17,6 +17,7 @@ contract voting{
         address voterAddress; 
         uint studentId; 
     }
+    
 
     /*public array of data type 'candidateDetails' to
     take more than one candidate when necessary*/
@@ -28,13 +29,15 @@ contract voting{
     //mapping(address => Voter) public voters;
     
     address public electionOfficer; ///declaring address of person who calls poll creation contract
+    
+    uint public expireTime;
 
 
     /*constructor takes to sets of array stored in memory to record 
     the details of the various candidates and whatever position the 
     candidate is vies for*/
 
-    function main(bytes32[] memory candidateInfo, bytes32[] memory position) public {
+    function createPoll(bytes32[] memory candidateInfo, bytes32[] memory position, uint _timeLimit) public {
         electionOfficer = msg.sender;
         
         for(uint i = 0; i < candidateInfo.length; i++){
@@ -45,8 +48,13 @@ contract voting{
             }));
 
         }
+        
+        expireTime = block.timestamp + _timeLimit; //voting time period
+
 
     }
+    
+    
     /*
     approvedVoters function takes addresses and student Ids of people(students) who the ballot
     creator(electionOfficer) wants to participate in the election
@@ -66,8 +74,9 @@ contract voting{
         }
     }
 
-    function castVote(address _address, uint _choice) public{
+    function castVote(address _address, uint _choice)  public{
         require(msg.sender == _address, "Incorrect transacting address");
+        require(expireTime > block.timestamp, "Voting has ended");
         
         for(uint k = 0; k < allowedVoters.length; k++){
             if(allowedVoters[k].voterAddress == _address){
@@ -82,14 +91,20 @@ contract voting{
     function winningCandidate() public view
             returns (uint winningCandidate_){
                 
-            uint winningVoteCount = 0;
-            
-            for (uint p = 0; p < _candidates.length; p++) {
-                if (_candidates[p].voteCount > winningVoteCount) {
-                    winningVoteCount = _candidates[p].voteCount;
-                    winningCandidate_ = p;
+                if(msg.sender != electionOfficer){
+                    require(expireTime < block.timestamp, "You can check the winner when voting ends");
+                
                 }
-            }
+                else{
+                    uint winningVoteCount = 0;
+                    
+                        for (uint p = 0; p < _candidates.length; p++) {
+                            if (_candidates[p].voteCount > winningVoteCount) {
+                                winningVoteCount = _candidates[p].voteCount;
+                                winningCandidate_ = p;
+                            }
+                        }
+                    }
     }
 
     /** 
