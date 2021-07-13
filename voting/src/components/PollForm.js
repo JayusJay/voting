@@ -35,11 +35,30 @@ export default ({ drizzle, drizzleState }) => {
           <ContractForm drizzle={drizzle}
            contract="voting" 
            method="createPoll"
-           labels = {["candidate info, position, time limit"]}
+           labels = {["candidate info", "position ", "time limit"]}
           
           />
         </div>
-        </div>
         
+          <p>Approve address to vote</p>
+          <ContractForm 
+          drizzle = {drizzle}
+          contract = "voting"
+          method = "approveVoters"
+          labels = {["Address", "Student ID"]}
+          />
+
+          <p>Candidates</p>
+          <ContractData 
+          drizzle = {drizzle}
+          contract = "voting"
+          drizzleState = {drizzleState}
+          method = "_candidates"
+          toUtf8
+          methodArgs = {drizzleState.units}
+          />
+          
+      </div> 
+
     );
 };
