@@ -1,64 +1,130 @@
-import React, { Component } from 'react';
-import { newContextComponents } from "@drizzle/react-components";
-const { AccountData, ContractData, ContractForm } = newContextComponents;
+import { useState } from 'react';
+import Web3 from 'web3';
+import {ethers} from 'ethers';
+import voting from '../contracts/voting.json';
+import Container from '@material-ui/core/Container';
+import TextField from '@material-ui/core/TextField';
+//import {makeStyles} from '@material-ui/core/styles';
+
+//let metaconnect = false;
+
+function PollForm(){
+
+const votingAddress = "0x5ffbbF196922c73dF9A50a6Bf7729BF8853D4EF4";
 
 
-export default ({ drizzle, drizzleState }) => {
-    // destructure drizzle and drizzleState from props
-    return (
-      <div className="App">
-            <div>
-            <h1>Voting Poll Form</h1>
-            <p>
-                Testing this out
-            </p>
+
+const [candidateNames, setNameOfCandidate] = useState([
+  {names: ""}
+]);
+
+const [candidatePosition, setPosition] = useState([
+  {positions: ""}
+]);
+
+const [time, setTime] = useState(0);
+
+const handleInputNameChange = (index, event) => {
+    const values = [...candidateNames];
+    values[index][event.target.name] = event.target.value;
+    setNameOfCandidate(values);
+}
+
+const handleInputPositionChange = (index, e) => {
+  const values = [...candidatePosition];
+  values[index][e.target.name] = e.target.value;
+  setPosition(values);
+}
+
+// let arr = ["Jayus", "Jay"]
+// var arr1 = ["Presi", "dent"]
+// var clock = 300;
+
+const metamask = async () => {
+  if(window.ethereum){
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      //  const account = accounts[0];
+      
+      //  console.log(account);
+      // metaconnect = true;
+  }
+  else {
+    window.alert("please install metamask");
+  }
+  
+}
+
+async function requestAccount(){
+  await window.ethereum.request({method: 'eth_requestAccounts'});
+}
+
+  async function CreatePoll(){
+    
+
+    await requestAccount();
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const contract = new ethers.Contract(votingAddress, voting.abi, signer);
+    const transaction = await new contract.createPoll(
+      candidateNames, candidatePosition, time);
+    await transaction.wait();
+    console.log("Poll created");
+  }
+
+
+
+
+      return (
+      <Container>
+        <button onClick = {metamask}> Connect Wallet</button>
+        <form>
+          <h3>Create a Poll</h3>
+          {candidateNames.map((candidateName, index) => (
+            <div key = {index}>
+              <TextField 
+              name = "names"
+              label ="Name of Candidates"
+              variant = "filled"
+              onChange ={event => handleInputNameChange(index, event)}
+              value = {candidateName.names}
+              />
+         
             </div>
-        
-  
-        <div className="section">
-          <h2>Active Account</h2>
-          <AccountData
-            drizzle={drizzle}
-            drizzleState={drizzleState}
-            accountIndex={0}
-            units="ether"
-            precision={3}
-          />
-        </div>
-  
-        <div className="section">
-          <h2>Voting contract</h2>
-          <p>
-            This shows a voting contract that accepts an array of information and time
-          </p>
- 
-          <ContractForm drizzle={drizzle}
-           contract="voting" 
-           method="createPoll"
-           labels = {["candidate info", "position ", "time limit"]}
-          
-          />
-        </div>
-        
-          <p>Approve address to vote</p>
-          <ContractForm 
-          drizzle = {drizzle}
-          contract = "voting"
-          method = "approveVoters"
-          labels = {["Address", "Student ID"]}
-          />
+          ))}
+              
+          {candidatePosition.map((position, index)=>(
+            <div key = {index}>
+              <TextField 
+              name = "positions"
+              label ="Position of Candidates"
+              variant = "filled"
+              onChange ={e => handleInputPositionChange(index, e)}
+              value = {position.positions}
 
-          <p>Candidates</p>
-          <ContractData 
-          drizzle = {drizzle}
-          contract = "voting"
-          drizzleState = {drizzleState}
-          method = "_candidates"
-          toUtf8
-          methodArgs = {drizzleState.units}
-          />
-          
-      </div> 
+              />  
+            </div>
+          ))}
 
+        <TextField 
+        onChange = {e => setTime(e.target.value)}
+        label = "Time in secs" value = {time}
+        variant = "filled" />
+
+        </form>
+
+        <button onClick = {CreatePoll}>Create Poll</button>
+
+    
+
+
+        {/* <input onChange = {e => setNameOfCandidate(e.target.value)}
+        placeholder = "[Name of Candidates]" value = {candidateName}/> */}    
+        {/* <input onChange = {e => setPosition(e.target.value)}
+        placeholder = "[Positions]" value = {position}/> */}
+
+
+      </Container>
     );
-};
+ 
+}
+export default PollForm

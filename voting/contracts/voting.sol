@@ -5,8 +5,8 @@ contract voting{
 
     ///custom data type to collect details of candidates
     struct candidateDetails{ 
-        bytes32 name;
-        bytes32 vyingPosition;
+        string name;
+        string vyingPosition;
         uint voteCount;
     }
 
@@ -37,7 +37,7 @@ contract voting{
     the details of the various candidates and whatever position the 
     candidate is vies for*/
 
-    function createPoll(bytes32[] memory candidateInfo, bytes32[] memory position, uint _timeLimit) public {
+    function createPoll(string[] memory candidateInfo, string[] memory position, uint _timeLimit) public {
         electionOfficer = msg.sender;
         
         for(uint i = 0; i < candidateInfo.length; i++){
@@ -49,7 +49,7 @@ contract voting{
 
         }
         
-        expireTime = block.timestamp + _timeLimit; //voting time period
+        expireTime = block.timestamp + _timeLimit;
 
 
     }
@@ -113,7 +113,7 @@ contract voting{
      * @return vyingPosition_ the position of the winner
      */
     function winnerName() public view
-            returns (bytes32 winnerName_, bytes32 vyingPosition_){
+            returns (string memory winnerName_, string memory vyingPosition_){
         winnerName_ = _candidates[winningCandidate()].name;
         vyingPosition_ = _candidates[winningCandidate()].vyingPosition;
     }
