@@ -31,7 +31,11 @@ contract voting{
     address public electionOfficer; ///declaring address of person who calls poll creation contract
     
     uint public expireTime;
-
+    
+    /// display the candidates
+    function showCandidates() public view returns (candidateDetails[] memory){
+        return _candidates;
+    }
 
     /*constructor takes to sets of array stored in memory to record 
     the details of the various candidates and whatever position the 

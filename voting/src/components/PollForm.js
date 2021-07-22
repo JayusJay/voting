@@ -1,16 +1,37 @@
 import { useState } from 'react';
-import Web3 from 'web3';
 import {ethers} from 'ethers';
 import voting from '../contracts/voting.json';
 import Container from '@material-ui/core/Container';
 import TextField from '@material-ui/core/TextField';
-//import {makeStyles} from '@material-ui/core/styles';
+import {makeStyles} from '@material-ui/core/styles';
+import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
+import RemoveIcon from '@material-ui/icons/Remove';
+import AddIcon from '@material-ui/icons/Add';
+import Icon from '@material-ui/core/Icon';
 
-//let metaconnect = false;
+
+const useStyles = makeStyles((theme) => ({
+ 
+  root: {
+    '& .MuiTextField-root': {
+      margin: theme.spacing(1),
+    },
+  },
+  button: {
+    margin:theme.spacing(1),
+  },
+}));
 
 function PollForm(){
 
-const votingAddress = "0x5ffbbF196922c73dF9A50a6Bf7729BF8853D4EF4";
+const classes = useStyles();
+
+const votingAddress = "0xC07dfdDf143E74DE3E2C9c9a49b33251813a06B8";
+
+var cand = [];
+var pos = [];
+
 
 
 
@@ -24,6 +45,10 @@ const [candidatePosition, setPosition] = useState([
 
 const [time, setTime] = useState(0);
 
+const [approveAddress, setAddresses] = useState([
+  {address: "", ID: 0 }
+])
+
 const handleInputNameChange = (index, event) => {
     const values = [...candidateNames];
     values[index][event.target.name] = event.target.value;
@@ -31,22 +56,41 @@ const handleInputNameChange = (index, event) => {
 }
 
 const handleInputPositionChange = (index, e) => {
-  const values = [...candidatePosition];
-  values[index][e.target.name] = e.target.value;
-  setPosition(values);
+  const val = [...candidatePosition];
+  val[index][e.target.name] = e.target.value;
+  setPosition(val);
 }
 
-// let arr = ["Jayus", "Jay"]
-// var arr1 = ["Presi", "dent"]
-// var clock = 300;
+const handleAddFields = () => {
+  setNameOfCandidate([...candidateNames, {names: ""}]);
+  setPosition([...candidatePosition, {positions: ""}]);
+}
+
+const handleRemoveFields = (index) => {
+  const values = [...candidateNames];
+  values.splice(index, 1);
+  setNameOfCandidate(values);
+
+  const val = [...candidatePosition];
+  val.splice(index, 1);
+  setPosition(val);
+}
+
+const handleSubmit = (e) => {
+  e.preventDefault();
+
+  for(var i = 0; i < candidateNames.length; i++){
+    cand.push(candidateNames[i].names);
+    pos.push(candidatePosition[i].positions);
+  }
+window.alert("Form submitted, click 'CREATE POLL' to continue")
+  
+}
+
 
 const metamask = async () => {
   if(window.ethereum){
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      //  const account = accounts[0];
-      
-      //  console.log(account);
-      // metaconnect = true;
+    await window.ethereum.request({ method: 'eth_requestAccounts' });
   }
   else {
     window.alert("please install metamask");
@@ -59,16 +103,15 @@ async function requestAccount(){
 }
 
   async function CreatePoll(){
-    
 
     await requestAccount();
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const contract = new ethers.Contract(votingAddress, voting.abi, signer);
     const transaction = await new contract.createPoll(
-      candidateNames, candidatePosition, time);
+      cand, pos, time);
     await transaction.wait();
-    console.log("Poll created");
+    window.alert("Poll Created !!");
   }
 
 
@@ -76,8 +119,18 @@ async function requestAccount(){
 
       return (
       <Container>
-        <button onClick = {metamask}> Connect Wallet</button>
-        <form>
+        <Button
+          className ={classes.button}
+          variant = "contained"
+          color = "primary"
+          type = "metamask"
+          onClick = {metamask}>
+          Connect Wallet
+        </Button>
+        
+        <form 
+        className = {classes.root}
+        onSubmit = {handleSubmit}>
           <h3>Create a Poll</h3>
           {candidateNames.map((candidateName, index) => (
             <div key = {index}>
@@ -88,9 +141,21 @@ async function requestAccount(){
               onChange ={event => handleInputNameChange(index, event)}
               value = {candidateName.names}
               />
-         
+           
+              <IconButton
+                onClick = {() => handleRemoveFields(index)}
+              >
+                <RemoveIcon/>
+              </IconButton>
+
+              <IconButton
+                onClick = {() => handleAddFields()}
+              >
+                  <AddIcon/>
+              </IconButton>
             </div>
           ))}
+          
               
           {candidatePosition.map((position, index)=>(
             <div key = {index}>
@@ -110,18 +175,52 @@ async function requestAccount(){
         label = "Time in secs" value = {time}
         variant = "filled" />
 
+          <Button
+            className ={classes.button}
+            variant = "contained"
+            color = "primary"
+            type = "submit"
+            endIcon = {<Icon>send</Icon>}
+            onClick = {handleSubmit}>
+            Submit Form
+          </Button>
         </form>
 
-        <button onClick = {CreatePoll}>Create Poll</button>
+{/* ################################## New form ####################################### */}
+        <form className = {classes.root}>
+        <h3>Approve Voters</h3>
+          <TextField
+            name = "address"
+            label = "Approve Address"
+            variant = "filled"
+            value = {approveAddress.address}
+          />
 
-    
+          <TextField
+            name = "ID"
+            label = "Student ID"
+            variant = "filled"
+            value = {approveAddress.ID}
+          />
 
+          <IconButton>
+            <RemoveIcon/>
+          </IconButton>
 
-        {/* <input onChange = {e => setNameOfCandidate(e.target.value)}
-        placeholder = "[Name of Candidates]" value = {candidateName}/> */}    
-        {/* <input onChange = {e => setPosition(e.target.value)}
-        placeholder = "[Positions]" value = {position}/> */}
+          <IconButton>
+            <AddIcon/>
+          </IconButton>
+        </form>
 
+        <Button 
+          className ={classes.button}
+          variant = "contained"
+          color = "primary"
+          type = "createPoll"
+          endIcon = {<Icon>send</Icon>}
+          onClick = {CreatePoll}>
+          Create Poll
+        </Button>
 
       </Container>
     );
