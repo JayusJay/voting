@@ -1,23 +1,15 @@
-// const {useState, useCallback} = 'react';
+import {useState} from 'react';
+import {ethers} from 'ethers';
+import voting from '../contracts/voting';
+import Container from '@material-ui/core/Container'
 
-// function Example() {
-//     const [theArray, setTheArray] = useState([]);
-//     const addEntryClick = () => {
-//         setTheArray([...theArray, `Entry ${theArray.length}`]);
-//     };
-//     console.log(theArray);
-//     return [
-//         <input type="button" onClick={addEntryClick} value="Add" />,
-//         <div>{theArray.map(entry =>
-//           <div>{entry}</div>
-//         )}
-//         </div>
-//     ];
 
-  
-    
-// }
+function PollList(){
 
-// ReactDOM.render(
-//   <Example />,
-//   document.getElementById("root"))
+    return(
+        <Container>
+        <h2>This is from PollList</h2>
+        </Container>
+    )
+}
+export default PollList

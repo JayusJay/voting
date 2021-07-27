@@ -33,7 +33,7 @@ function PollForm() {
   var IDs = []
   var IDsNo = []
 
-  //handling data input in arrays
+  //handling data and nameErrors with useState hooks
   const [candidateNames, setNameOfCandidate] = useState([{ names: '' }])
 
   const [candidatePosition, setPosition] = useState([{ positions: '' }])
@@ -44,17 +44,24 @@ function PollForm() {
 
   const [approveID, setID] = useState([{ ID: 0 }])
 
-  const [errors, setErrors] = useState({ help: null })
-  const [positionErrors, setPositionErrors] = useState({ help: null })
+  const [nameErrors, setErrors] = useState({ help: '' })
 
-  ////Candidates name and positions change handlers
+  const [positionErrors, setPositionErrors] = useState({ help: '' })
+
+  const [timeErrors, setTimeErrors] = useState({ digit: '' })
+
+  const [addressErrors, setAddressErrors] = useState({ error: '' })
+  
+  const [IDErrors, setIDErrors] = useState({ aid: '' })
+
+  ////Candidates name, positions and time change handlers with validation
   const handleInputNameChange = (index, event) => {
     const values = [...candidateNames]
     values[index][event.target.name] = event.target.value
     setNameOfCandidate(values)
 
     setErrors({ help: '' })
-    let reg = new RegExp(/[a-zA-Z]+/g).test(event.target.value)
+    let reg = new RegExp('^[a-zA-Z ]+$').test(event.target.value)
     if (!reg) {
       setErrors({ help: 'Enter a valid name' })
     }
@@ -66,22 +73,45 @@ function PollForm() {
     setPosition(val)
 
     setPositionErrors({ help: '' })
-    let reg = new RegExp(/[a-zA-Z]+/g).test(e.target.value)
+    let reg = new RegExp('^[a-zA-Z ]+$').test(e.target.value)
     if (!reg) {
       setPositionErrors({ help: 'Enter a valid Position Title' })
     }
   }
-  ////Addresses and IDs change handlers
+
+  const handleTimeChange = (e) => {
+    setTime(e.target.value)
+
+    setTimeErrors({ digit: '' })
+    let reg = RegExp('[0-9]').test(e.target.value)
+    if (!reg) {
+      setTimeErrors({ digit: 'Please input valid time in seconds' })
+    }
+  }
+
+  ////Addresses and IDs change handlers with validation
   const handleAddressChange = (index, e) => {
     const val = [...approveAddress]
     val[index][e.target.name] = e.target.value
     setAddresses(val)
+
+    setAddressErrors({ error: '' })
+    let reg = new RegExp(/^0x[a-fA-F0-9]{40}$/).test(e.target.value)
+    if (!reg) {
+      setAddressErrors({ error: 'Input a valid Ethereum address' })
+    }
   }
 
   const handleIDChange = (index, e) => {
     const val = [...approveID]
     val[index][e.target.name] = e.target.value
     setID(val)
+
+    setIDErrors({ aid: '' })
+    let reg = RegExp('[0-9]').test(e.target.value)
+    if (!reg) {
+      setIDErrors({ aid: 'Input a valid student ID' })
+    }
   }
   ////Inreament of candidates and position fields handler
   const handleAddFields = () => {
@@ -124,6 +154,7 @@ function PollForm() {
     window.alert("Form submitted, click 'CREATE POLL' to continue")
     console.log('names: ', cand)
     console.log('positions: ', pos)
+    console.log('time: ', time)
   }
   ////Address and IDs submission handler
   const handleAddressSubmit = (e) => {
@@ -140,6 +171,15 @@ function PollForm() {
     console.log('IDs: ', IDs)
     console.log('IDsNo: ', IDsNo)
   }
+  //   const enableName = () => {
+  //     const enableName1 = positionErrors.help
+  //  if(candidateNames[0].names.length ||
+  //    candidatePosition.positions[0].length ||
+  //    time.length === 0){
+  //      return false
+  //    }
+
+  //   }
 
   ////Metamask button handler
   const metamask = async () => {
@@ -198,8 +238,8 @@ function PollForm() {
               value={candidateName.names}
               required
               type="text"
-              error={Boolean(errors?.help)}
-              helperText={errors?.help}
+              error={Boolean(nameErrors?.help)}
+              helperText={nameErrors?.help}
             />
 
             <IconButton onClick={() => handleRemoveFields(index)}>
@@ -230,10 +270,13 @@ function PollForm() {
 
         <TextField
           type="number"
-          label="Time in secs"
-          onChange={(e) => setTime(e.target.value)}
+          label="Poll duration in secs"
+          onChange={(e) => handleTimeChange(e)}
           value={time}
           variant="filled"
+          required
+          error={Boolean(timeErrors?.digit)}
+          helperText={timeErrors?.digit}
         />
 
         <Button
@@ -243,6 +286,7 @@ function PollForm() {
           type="submit"
           endIcon={<Icon>send</Icon>}
           onClick={handleSubmit}
+          // disabled ={!candidateNames[0].names && candidatePosition[0].positions && time}
         >
           Submit Form
         </Button>
@@ -270,6 +314,9 @@ function PollForm() {
               variant="filled"
               onChange={(e) => handleAddressChange(index, e)}
               value={approveAddress.address}
+              required
+              error={Boolean(addressErrors?.error)}
+              helperText={addressErrors?.error}
             />
 
             <IconButton onClick={() => handleRemoveAddress(index)}>
@@ -291,6 +338,9 @@ function PollForm() {
               variant="filled"
               onChange={(e) => handleIDChange(index, e)}
               value={approveID.ID}
+              required
+              error={Boolean(IDErrors?.aid)}
+              helperText={IDErrors?.aid}
             />
           </div>
         ))}

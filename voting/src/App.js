@@ -1,16 +1,17 @@
-//import './App.css';
-import PollForm from './components/PollForm';
-//import PollList from './components/PollList';
+import React from 'react'
+import { BrowserRouter as Router, Route } from 'react-router-dom'
+import PollForm from './components/PollForm'
+import PollList from './components/PollList'
+import Nav from './components/Nav'
 
-
-function App () {
+function App() {
   return (
-    <div className="App">
-      <header className="App-header" />
-        <PollForm/>
-      
-    </div>
-  );
+    <Router>
+      <Nav />
+      <Route path="/" exact component={PollForm} />
+      <Route path="/poll-list" component={PollList} />
+    </Router>
+  )
 }
 
-export default App;
+export default App
