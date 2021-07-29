@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
 function PollForm() {
   const classes = useStyles()
 
-  const votingAddress = '0xC07dfdDf143E74DE3E2C9c9a49b33251813a06B8'
+  const votingAddress = '0xca16B991467583f107C054d376Cd68C91FFBF767'
 
   var cand = []
   var pos = []
@@ -51,7 +51,7 @@ function PollForm() {
   const [timeErrors, setTimeErrors] = useState({ digit: '' })
 
   const [addressErrors, setAddressErrors] = useState({ error: '' })
-  
+
   const [IDErrors, setIDErrors] = useState({ aid: '' })
 
   ////Candidates name, positions and time change handlers with validation
@@ -172,10 +172,10 @@ function PollForm() {
     console.log('IDsNo: ', IDsNo)
   }
   //   const enableName = () => {
-  //     const enableName1 = positionErrors.help
-  //  if(candidateNames[0].names.length ||
-  //    candidatePosition.positions[0].length ||
-  //    time.length === 0){
+  //     // const enableName1 = positionErrors.help
+  //  if(candidateNames[0].names == '' ||
+  //    candidatePosition[0].positions == '' ||
+  //    time === 0){
   //      return false
   //    }
 
@@ -209,9 +209,14 @@ function PollForm() {
     const provider = new ethers.providers.Web3Provider(window.ethereum)
     const signer = provider.getSigner()
     const contract = new ethers.Contract(votingAddress, voting.abi, signer)
+    try{
     const transaction = await new contract.approveVoters(add, IDsNo)
     await transaction.wait()
     console.log(add, 'Addresses Approved')
+    }
+    catch(err){
+      console.log("Error ", err)
+    }
   }
 
   return (
@@ -286,7 +291,7 @@ function PollForm() {
           type="submit"
           endIcon={<Icon>send</Icon>}
           onClick={handleSubmit}
-          // disabled ={!candidateNames[0].names && candidatePosition[0].positions && time}
+          // disabled ={!enableName}
         >
           Submit Form
         </Button>
