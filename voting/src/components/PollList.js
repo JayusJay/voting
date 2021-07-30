@@ -9,7 +9,8 @@ import Radio from '@material-ui/core/Radio'
 import RadioGroup from '@material-ui/core/RadioGroup'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import FormControl from '@material-ui/core/FormControl'
-// import FormLabel from '@material-ui/core/FormLabel'
+import { Grid, Typography } from '@material-ui/core'
+// import  from '@material-ui/core/'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -20,26 +21,36 @@ const useStyles = makeStyles((theme) => ({
   button: {
     margin: theme.spacing(1),
   },
+  list: {
+    margin: 0,
+    padding: 11,
+  },
 }))
 
 const votingAddress = '0xca16B991467583f107C054d376Cd68C91FFBF767'
+var won = []
 var candidateDetail = []
-var vying
+var vying = []
+
 
 function PollList() {
   const classes = useStyles()
-  // const [candi, setCandi] = useState([])
   const [value, setValue] = useState('')
   const [disable, setDisable] = useState(false)
   const [disableMetamask, setDisableMetamask] = useState(false)
 
+
   const metamask = async () => {
-    if (window.ethereum) {
-      await window.ethereum.request({ method: 'eth_requestAccounts' })
-    } else {
-      window.alert('please install metamask')
+    try {
+      if (window.ethereum) {
+        await window.ethereum.request({ method: 'eth_requestAccounts' })
+      } else {
+        window.alert('please install metamask')
+      }
+      setDisableMetamask(true)
+    } catch (err) {
+      window.alert('Please connect wallet to continue')
     }
-    setDisableMetamask(true)
   }
   ////requesting user account from metamask
   async function requestAccount() {
@@ -54,26 +65,67 @@ function PollList() {
         const _candidates = await contract.showCandidates()
         for (var i = 0; i < _candidates.length; i++) {
           candidateDetail.push(_candidates[i].name)
-          }
-          vying = _candidates[0].vyingPosition
-        // setCandi(candidateDetail)
+          vying.push(_candidates[i].vyingPosition)
+        }
 
-         console.log("positions: ", vying)
-
-        // console.log('data 0', _candidates[0])
-        console.log('candidate details', candidateDetail)
+        console.log('position ', vying)
+        console.log('data', _candidates)
       } catch (err) {
         console.log('Error: ', err)
       }
-      // console.log('candi', candi)
     }
     setDisable(true)
   }
-// radio button change handler
+
+  async function Vote() {
+    if (typeof window.ethereum !== 'undefined') {
+      const address = await window.ethereum.request({
+        method: 'eth_requestAccounts',
+      })
+      const address1 = address[0]
+      const provider = new ethers.providers.Web3Provider(window.ethereum)
+      const signer = provider.getSigner()
+      const contract = new ethers.Contract(votingAddress, voting.abi, signer)
+      try {
+        const transaction = await new contract.castVote(address1, value)
+        await transaction.wait()
+        console.log(`voted! with ${address} for candidate with index ${value}`)
+      } catch (err) {
+        console.log('Error', err)
+        window.alert(err.data.message)
+      }
+      console.log('account ', address1)
+    }
+  }
+
+  async function Winner() {
+    if (window.ethereum !== 'undefined') {
+      await requestAccount()
+      const provider = new ethers.providers.Web3Provider(window.ethereum)
+      const contract = new ethers.Contract(votingAddress, voting.abi, provider)
+      try {
+        const winner = await contract.winnerName()
+        for(var i = 0; i < winner.length; i++){
+
+            won.push(winner[i])
+
+        }
+        console.log(winner)
+      } catch (err) {
+        console.log('winner error', err)
+      }
+      console.log('winner', won)  
+      
+
+    }
+
+  }
+  // radio button change handler
   const handleChange = (event) => {
     setValue(event.target.value)
   }
-  console.log('valu ', value)
+  console.log('value ', value)
+
   return (
     <Container>
       <Button
@@ -82,42 +134,96 @@ function PollList() {
         color="primary"
         type="metamask"
         onClick={metamask}
-        disabled = {disableMetamask}
+        disabled={disableMetamask}
       >
         Connect Wallet
       </Button>
-      <h2>Available Polls </h2>
+      <Typography variant="h4" component="h6">
+        Available Polls
+      </Typography>
       <Button
         className={classes.button}
         variant="contained"
         color="primary"
         type="candidates"
         onClick={candidates}
-        disabled = {disable}
+        disabled={disable}
       >
         View Candidates
       </Button>
- 
- <h4>{vying}</h4>
-      {candidateDetail.map((name, index) => (
-        <div key={index}>
-          <FormControl component="fieldset">
-            {/* <FormLabel component="legend">Candidates</FormLabel> */}
-            <RadioGroup
-              value={value}
-              aria-label="Candidates"
-              name="candidates"
-              onChange={handleChange}
-            >
-              <FormControlLabel
-                value={index.toString()}
-                control={<Radio />}
-                label={name}
-              />
-            </RadioGroup>
-          </FormControl>
+
+      <Button
+        className={classes.button}
+        variant="contained"
+        color="primary"
+        type="Winner"
+        onClick={Winner}
+        // disabled={!disable}
+      >
+        Winner
+      </Button>
+      {won.map((win, index) => (
+        <div key = {index}>
+          <ul className={classes.list}>
+            <li>{win}</li>
+          </ul>
         </div>
       ))}
+
+      <Grid container>
+        <Grid container direction="column" xs={3}>
+          <Typography variant="h4" component="h6">
+            Candidates
+          </Typography>
+          {candidateDetail.map((name, index) => (
+            <div key={index}>
+              <FormControl component="fieldset">
+                <Grid item xs={3}>
+                  <RadioGroup
+                    value={value}
+                    aria-label="Candidates"
+                    name="candidates"
+                    onChange={handleChange}
+                  >
+                    <FormControlLabel
+                      value={index.toString()}
+                      control={<Radio />}
+                      label={name}
+                    />
+                  </RadioGroup>
+                </Grid>
+              </FormControl>
+            </div>
+          ))}
+        </Grid>
+
+        <Grid container direction="column" xs={3}>
+          <Typography variant="h4" component="h6">
+            Position
+          </Typography>
+          {vying.map((position, index) => (
+            <div key={index}>
+              <Grid item xs={3}>
+                <ul className={classes.list}>
+                  <li>{position}</li>
+                </ul>
+              </Grid>
+            </div>
+          ))}
+        </Grid>
+      </Grid>
+      <Button
+        className={classes.button}
+        variant="contained"
+        color="primary"
+        type="vote"
+        onClick={Vote}
+        disabled={!disable}
+      >
+        Cast Vote
+      </Button>
+ 
+
     </Container>
   )
 }
