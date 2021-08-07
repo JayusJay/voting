@@ -35,24 +35,18 @@ function PollForm() {
 
   //handling data and nameErrors with useState hooks
   const [candidateNames, setNameOfCandidate] = useState([{ names: '' }])
-
   const [candidatePosition, setPosition] = useState([{ positions: '' }])
-
   const [time, setTime] = useState(0)
-
   const [approveAddress, setAddresses] = useState([{ address: '' }])
-
   const [approveID, setID] = useState([{ ID: 0 }])
-
   const [nameErrors, setErrors] = useState({ help: '' })
-
   const [positionErrors, setPositionErrors] = useState({ help: '' })
-
   const [timeErrors, setTimeErrors] = useState({ digit: '' })
-
   const [addressErrors, setAddressErrors] = useState({ error: '' })
-
   const [IDErrors, setIDErrors] = useState({ aid: '' })
+  const [disablePoll, setDisablePoll] = useState(true)
+  const [disableAddress, setDisableAddress] = useState(true)
+  const [disableMetamask, setDisableMetamask] = useState(false)
 
   ////Candidates name, positions and time change handlers with validation
   const handleInputNameChange = (index, event) => {
@@ -83,7 +77,7 @@ function PollForm() {
     setTime(e.target.value)
 
     setTimeErrors({ digit: '' })
-    let reg = RegExp('[0-9]').test(e.target.value)
+    let reg = RegExp('^[0-9]+$').test(e.target.value)
     if (!reg) {
       setTimeErrors({ digit: 'Please input valid time in seconds' })
     }
@@ -108,7 +102,7 @@ function PollForm() {
     setID(val)
 
     setIDErrors({ aid: '' })
-    let reg = RegExp('[0-9]').test(e.target.value)
+    let reg = RegExp('^[0-9]+$').test(e.target.value)
     if (!reg) {
       setIDErrors({ aid: 'Input a valid student ID' })
     }
@@ -152,9 +146,7 @@ function PollForm() {
       pos.push(candidatePosition[i].positions)
     }
     window.alert("Form submitted, click 'CREATE POLL' to continue")
-    console.log('names: ', cand)
-    console.log('positions: ', pos)
-    console.log('time: ', time)
+    setDisablePoll(false)
   }
   ////Address and IDs submission handler
   const handleAddressSubmit = (e) => {
@@ -167,26 +159,20 @@ function PollForm() {
     window.alert(
       "Addresses and IDs Submitted, proceed to click 'CONFIRM ADDRESSES'",
     )
-    console.log('address: ', add)
-    console.log('IDs: ', IDs)
-    console.log('IDsNo: ', IDsNo)
+    setDisableAddress(false)
   }
-  //   const enableName = () => {
-  //     // const enableName1 = positionErrors.help
-  //  if(candidateNames[0].names == '' ||
-  //    candidatePosition[0].positions == '' ||
-  //    time === 0){
-  //      return false
-  //    }
-
-  //   }
 
   ////Metamask button handler
   const metamask = async () => {
-    if (window.ethereum) {
-      await window.ethereum.request({ method: 'eth_requestAccounts' })
-    } else {
-      window.alert('please install metamask')
+    try {
+      if (window.ethereum) {
+        await window.ethereum.request({ method: 'eth_requestAccounts' })
+      } else {
+        window.alert('please install metamask')
+      }
+      setDisableMetamask(true)
+    } catch (err) {
+      window.alert('Please connect wallet to continue')
     }
   }
   ////requesting user account from metamask
@@ -199,9 +185,14 @@ function PollForm() {
     const provider = new ethers.providers.Web3Provider(window.ethereum)
     const signer = provider.getSigner()
     const contract = new ethers.Contract(votingAddress, voting.abi, signer)
+    try{
     const transaction = await new contract.createPoll(cand, pos, time)
     await transaction.wait()
     window.alert('Poll Created !!')
+    }
+    catch(err){
+      window.alert("Please cross-check your input values")
+    }
   }
   ////sending approve voters function to smart contract
   async function ApproveVoters() {
@@ -209,13 +200,12 @@ function PollForm() {
     const provider = new ethers.providers.Web3Provider(window.ethereum)
     const signer = provider.getSigner()
     const contract = new ethers.Contract(votingAddress, voting.abi, signer)
-    try{
-    const transaction = await new contract.approveVoters(add, IDsNo)
-    await transaction.wait()
-    console.log(add, 'Addresses Approved')
-    }
-    catch(err){
-      console.log("Error ", err)
+    try {
+      const transaction = await new contract.approveVoters(add, IDsNo)
+      await transaction.wait()
+      console.log(add, 'Addresses Approved')
+    } catch (err) {
+      console.log('Error ', err)
     }
   }
 
@@ -227,6 +217,7 @@ function PollForm() {
         color="primary"
         type="metamask"
         onClick={metamask}
+        disabled={disableMetamask}
       >
         Connect Wallet
       </Button>
@@ -274,7 +265,6 @@ function PollForm() {
         ))}
 
         <TextField
-          type="number"
           label="Poll duration in secs"
           onChange={(e) => handleTimeChange(e)}
           value={time}
@@ -291,7 +281,7 @@ function PollForm() {
           type="submit"
           endIcon={<Icon>send</Icon>}
           onClick={handleSubmit}
-          // disabled ={!enableName}
+          disabled={!disablePoll}
         >
           Submit Form
         </Button>
@@ -304,11 +294,11 @@ function PollForm() {
         type="createPoll"
         endIcon={<Icon>send</Icon>}
         onClick={CreatePoll}
+        disabled={disablePoll}
       >
         Create Poll
       </Button>
 
-      {/* ################################## New form ####################################### */}
       <h3>Approve Voters</h3>
       <form className={classes.root}>
         {approveAddress.map((approveAddress, index) => (
@@ -339,7 +329,6 @@ function PollForm() {
             <TextField
               name="ID"
               label="Student ID"
-              type="number"
               variant="filled"
               onChange={(e) => handleIDChange(index, e)}
               value={approveID.ID}
@@ -356,6 +345,7 @@ function PollForm() {
           color="primary"
           endIcon={<Icon>send</Icon>}
           onClick={handleAddressSubmit}
+          disabled={!disableAddress}
         >
           Submit Form
         </Button>
@@ -368,6 +358,7 @@ function PollForm() {
         type="approveVoters"
         endIcon={<Icon>send</Icon>}
         onClick={ApproveVoters}
+        disabled={disableAddress}
       >
         Confirm Addresses
       </Button>
