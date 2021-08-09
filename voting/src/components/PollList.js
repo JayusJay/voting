@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-const votingAddress = '0xca16B991467583f107C054d376Cd68C91FFBF767'
+const votingAddress = '0xAE10558D03246D7e2C688111671fD830331AB380'
 var candidateDetail = []
 var vying = []
 
@@ -41,6 +41,7 @@ function PollList() {
     {
       name: '',
       position: '',
+      count: 0,
     },
   ])
 
@@ -71,14 +72,28 @@ function PollList() {
           candidateDetail.push(_candidates[i].name)
           vying.push(_candidates[i].vyingPosition)
         }
+        console.log(_candidates)
       } catch (err) {
-        window.alert('Error: ', err)
+        window.alert(err.error.message)
       }
     }
     setDisable(true)
     setGridVisibility(true)
   }
 
+  // async function AllowedVoters() {
+  //   if (typeof window.ethereum !== 'undefined') {
+  //     const provider = new ethers.providers.Web3Provider(window.ethereum)
+  //     const contract = new ethers.Contract(votingAddress, voting.abi, provider)
+  //     try {
+  //       const allowed = await contract.showAllowed()
+
+  //       console.log(allowed)
+  //     } catch (err) {
+  //       window.alert(err)
+  //     }
+  //   }
+  // }
   async function Vote() {
     if (typeof window.ethereum !== 'undefined') {
       const address = await window.ethereum.request({
@@ -91,9 +106,11 @@ function PollList() {
       try {
         const transaction = await new contract.castVote(address1, value)
         await transaction.wait()
+        window.alert("Voted! Check Metamask for transaction receipt")
       } catch (err) {
-        window.alert(err.data.message)
+        window.alert(err.error.message)
       }
+
     }
   }
 
@@ -101,10 +118,14 @@ function PollList() {
     await requestAccount()
     const provider = new ethers.providers.Web3Provider(window.ethereum)
     const contract = new ethers.Contract(votingAddress, voting.abi, provider)
-    const winner = await contract.winnerName()
-
-    setWinn([{ name: winner[0], position: winner[1] }])
-    setVisibility(true)
+    try {
+      const winner = await contract.winnerName()
+      const vCount = parseInt(winner[2]._hex, 16) //hex to number
+      setWinn([{ name: winner[0], position: winner[1], count: vCount }])
+      setVisibility(true)
+    } catch (err) {
+      window.alert(err)
+    }
   }
 
   // radio button change handler
@@ -112,7 +133,6 @@ function PollList() {
     setValue(event.target.value)
     setDisable1(false)
   }
-console.log(process.env.MNEMONIC)
   return (
     <Container>
       <Button
@@ -202,14 +222,26 @@ console.log(process.env.MNEMONIC)
       >
         Cast Vote
       </Button>
+
+      {/* <Button
+        className={classes.button}
+        variant="contained"
+        color="primary"
+        type="allowedVoters"
+        onClick={AllowedVoters}
+      >
+        Allowed Voters
+      </Button> */}
+
       {visibility ? (
         <div>
           <Typography variant="h4" component="h6">
             Winning candidate
           </Typography>
           <ul>
-            <li>{winn[0].name}</li>
-            <li>{winn[0].position}</li>
+            <li>Name: {winn[0].name}</li>
+            <li>Position: {winn[0].position}</li>
+            <li>Vote Count: {winn[0].count}</li>
           </ul>
         </div>
       ) : null}

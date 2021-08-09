@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
 function PollForm() {
   const classes = useStyles()
 
-  const votingAddress = '0xca16B991467583f107C054d376Cd68C91FFBF767'
+  const votingAddress = '0xAE10558D03246D7e2C688111671fD830331AB380'
 
   var cand = []
   var pos = []
@@ -47,6 +47,11 @@ function PollForm() {
   const [disablePoll, setDisablePoll] = useState(true)
   const [disableAddress, setDisableAddress] = useState(true)
   const [disableMetamask, setDisableMetamask] = useState(false)
+  ////
+  const [name, setName] = useState([])
+  const [title, setTitle] = useState([])///positions
+  const [addrezz, setAddrezz] = useState([])
+  const [IDz, setIDz] = useState([])
 
   ////Candidates name, positions and time change handlers with validation
   const handleInputNameChange = (index, event) => {
@@ -145,6 +150,8 @@ function PollForm() {
       cand.push(candidateNames[i].names)
       pos.push(candidatePosition[i].positions)
     }
+    setName(cand)
+    setTitle(pos)
     window.alert("Form submitted, click 'CREATE POLL' to continue")
     setDisablePoll(false)
   }
@@ -155,7 +162,12 @@ function PollForm() {
       add.push(approveAddress[i].address)
       IDs.push(approveID[i].ID)
     }
+    ///IDs to integers
     IDsNo = IDs.map((i) => Number(i))
+    //update state
+    setAddrezz(add)
+    setIDz(IDsNo)
+
     window.alert(
       "Addresses and IDs Submitted, proceed to click 'CONFIRM ADDRESSES'",
     )
@@ -186,13 +198,16 @@ function PollForm() {
     const signer = provider.getSigner()
     const contract = new ethers.Contract(votingAddress, voting.abi, signer)
     try{
-    const transaction = await new contract.createPoll(cand, pos, time)
+    const transaction = await new contract.createPoll(name, title, time)
     await transaction.wait()
+    console.log("Name",cand)
+    console.log("time", time)
     window.alert('Poll Created !!')
     }
     catch(err){
       window.alert("Please cross-check your input values")
     }
+    console.log("names11: ", name)
   }
   ////sending approve voters function to smart contract
   async function ApproveVoters() {
@@ -201,11 +216,12 @@ function PollForm() {
     const signer = provider.getSigner()
     const contract = new ethers.Contract(votingAddress, voting.abi, signer)
     try {
-      const transaction = await new contract.approveVoters(add, IDsNo)
+      const transaction = await new contract.approveVoters(addrezz, IDz)
       await transaction.wait()
-      console.log(add, 'Addresses Approved')
+      console.log(addrezz, 'Addresses Approved')
+      console.log("IDs ", IDz)
     } catch (err) {
-      console.log('Error ', err)
+      window.alert(err.error.message)
     }
   }
 

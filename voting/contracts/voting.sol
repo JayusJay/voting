@@ -37,6 +37,9 @@ contract voting{
         return _candidates;
     }
 
+    function showAllowed() public view returns (Voter[] memory){
+        return allowedVoters;
+    }
     /*constructor takes to sets of array stored in memory to record 
     the details of the various candidates and whatever position the 
     candidate is vies for*/
@@ -117,9 +120,13 @@ contract voting{
      * @return vyingPosition_ the position of the winner
      */
     function winnerName() public view
-            returns (string memory winnerName_, string memory vyingPosition_){
+            returns (
+                string memory winnerName_,
+                string memory vyingPosition_, 
+                uint votes){
         winnerName_ = _candidates[winningCandidate()].name;
         vyingPosition_ = _candidates[winningCandidate()].vyingPosition;
+        votes = _candidates[winningCandidate()].voteCount;
     }
 
 }
