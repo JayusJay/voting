@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-const votingAddress = '0xAE10558D03246D7e2C688111671fD830331AB380'
+const votingAddress = '0xAE131888Fd96a7b745dAC150bD1Be0cB9aa8a17d'
 var candidateDetail = []
 var vying = []
 
