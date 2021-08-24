@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
 function PollForm() {
   const classes = useStyles()
 
-  const votingAddress = '0xAE131888Fd96a7b745dAC150bD1Be0cB9aa8a17d'
+  const votingAddress = '0x4dc6391b88C2ad621faA5a78F82DE79e1399366B'
 
   var cand = []
   var pos = []
