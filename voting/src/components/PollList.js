@@ -124,7 +124,7 @@ function PollList() {
       setWinn([{ name: winner[0], position: winner[1], count: vCount }])
       setVisibility(true)
     } catch (err) {
-      window.alert(err)
+      window.alert(err.error.message)
     }
   }
 

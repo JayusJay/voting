@@ -39,9 +39,9 @@ contract voting {
         return allowedVoters;
     }
 
-    /*constructor takes to sets of array stored in memory to record 
+    /*createPoll takes to sets of array stored in memory to record 
     the details of the various candidates and whatever position the 
-    candidate is vies for*/
+    candidate vies for*/
 
     function createPoll(
         string[] memory candidateInfo,
