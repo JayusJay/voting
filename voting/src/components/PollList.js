@@ -26,6 +26,7 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 const votingAddress = '0x4dc6391b88C2ad621faA5a78F82DE79e1399366B'
+// const votingAddress = '0x27eb2287807334BF8f96fe3d5a837ba0d2FE5898' //evmos testnet
 var candidateDetail = []
 var vying = []
 

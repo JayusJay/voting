@@ -48,6 +48,20 @@ module.exports = {
       port: 8545, // Standard Ethereum port (default: none)
       network_id: 5777, // Any network (default: none)
     },
+
+    //####### Evmos Testnet #######
+    evmos: {
+      provider: () =>
+        new HDWalletProvider(
+          mnemonic,
+          'http://arsiamons.rpc.evmos.org:8545/',
+          ),
+      network_id: 9000,
+      gas: 55000000,
+      confirmations: 2,
+      timeoutBlocks: 200,
+      skipDryRun: true,
+    },
     // Another network with more advanced options...
     // advanced: {
     // port: 8777,             // Custom port
